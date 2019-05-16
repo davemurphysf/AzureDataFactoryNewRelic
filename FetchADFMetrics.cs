@@ -21,6 +21,7 @@ namespace AzureDataFactoryNewRelic.FetchMetrics
             log.LogInformation($"FetchADFMetrics function executed at: {DateTime.Now}");
 
             // Set variables
+
             var tenantID = Environment.GetEnvironmentVariable("TenantId", EnvironmentVariableTarget.Process);
             var applicationId = Environment.GetEnvironmentVariable("ApplicationId", EnvironmentVariableTarget.Process);
             var authenticationKey = Environment.GetEnvironmentVariable("AuthenticationKey", EnvironmentVariableTarget.Process);
@@ -31,6 +32,7 @@ namespace AzureDataFactoryNewRelic.FetchMetrics
             var newRelicAccountId = Environment.GetEnvironmentVariable("NewRelicAccountId", EnvironmentVariableTarget.Process);
 
             // Authenticate and create a data factory management client
+
             var context = new AuthenticationContext("https://login.windows.net/" + tenantID);
             ClientCredential cc = new ClientCredential(applicationId, authenticationKey);
             AuthenticationResult result = context.AcquireTokenAsync("https://management.azure.com/", cc).Result;
@@ -78,7 +80,7 @@ namespace AzureDataFactoryNewRelic.FetchMetrics
                 return;
             }
 
-            // Get list of pipeline runs in the last 5 minutes by factory
+            // Get list of pipeline runs in the last interval of minutes by factory
 
             List<PipelineRun> pipelineRuns = new List<PipelineRun>();
             nextPageLink = null;
