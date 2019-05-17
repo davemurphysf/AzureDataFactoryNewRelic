@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -143,6 +144,27 @@ namespace AzureDataFactoryNewRelic.FetchMetrics
 
                 foreach (var p in pipelineRuns)
                 {
+                    var jobj = new JObject(p);
+                    jobj.Add("eventType", "ADFPipelineRun");  // eventType is required
+
+                    //Need to convert DateTimes into Unix timestamps in seconds or milliseconds
+
+                    if (p.LastUpdated.HasValue)
+                    {
+                        jobj["LastUpdated"] = ((DateTimeOffset)p.LastUpdated.Value.ToUniversalTime()).ToUnixTimeSeconds();
+                        jobj["timestamp"] = ((DateTimeOffset)p.LastUpdated.Value.ToUniversalTime()).ToUnixTimeSeconds(); // If LastUpdated is populated, use this for the Insights timestamp
+                    }
+
+                    if (p.RunStart.HasValue)
+                    {
+                        jobj["RunStart"] = ((DateTimeOffset)p.RunStart.Value.ToUniversalTime()).ToUnixTimeSeconds();
+                    }
+
+                    if (p.RunEnd.HasValue)
+                    {
+                        jobj["RunEnd"] = ((DateTimeOffset)p.RunEnd.Value.ToUniversalTime()).ToUnixTimeSeconds();
+                    }
+
                     try
                     {
                         var response = await httpClient.PostAsJsonAsync($"https://insights-collector.newrelic.com/v1/accounts/{newRelicAccountId}/events", p);
